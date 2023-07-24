@@ -1,70 +1,55 @@
 const express = require("express");
 const cors = require("cors");
 require('./db/config');
-const User= require('./db/User');
+const User = require('./db/User');
+const jwt = require('jsonwebtoken'); // Import the JWT library
+const crypto = require('crypto'); // Import the crypto module for generating the secret key
 const app = express();
+
 
 app.use(express.json());
-// Enable CORS for all routes in postman
-app.use(cors());
+
+// Enable CORS with specific options
+const corsOptions ={
+  origin:'*', 
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  allowedHeaders: "Content-Type, Authorization",
+  exposedHeaders: "Custom-Header1, Custom-Header2",
+}
+app.use(cors(corsOptions)) // Use this after the variable declaration
 
 
-app.post("/login",async (req, resp)=>{
-  
-  if(req.body.email && req.body.password){
+const secretKey = crypto.randomBytes(32).toString('hex');
 
-    let user= await User.findOne(req.body).select("-password");
-    if(user){
-      resp.send(user);
+console.log("Secret Key:", secretKey);
+
+app.post("/login", async (req, resp) => {
+  if (req.body.email && req.body.password) {
+    console.log("Login Request Body:", req.body); // Add this line to log the request body
+
+    try {
+      let user = await User.findOne(req.body).select("-password");
+      console.log("MongoDB Query:", user); // Add this line to log the MongoDB query result
+
+      if (user) {
+        // If the user is found, create a token and include it in the response
+        const token = jwt.sign({ userId: user._id }, 'your_secret_key_here', { expiresIn: '1h' });
+
+        // Return the user data and the token in the response
+        resp.json({ user, token });
+      } else {
+        // If the user is not found, return an error response with status 401 (Unauthorized)
+        resp.status(401).json({ error: "Invalid credentials" });
+      }
+    } catch (error) {
+      console.error("Error during login:", error.message);
+      resp.status(500).send("An error occurred during login.");
     }
-    else{
-      resp.send("No user found")
-    }
+  } else {
+    resp.status(400).json({ error: "Email and password are required" });
   }
-  else{
-    resp.send("No user found")
-  }
-  
-  
-})
+});
 
-app.listen(5000) 
 
-{/*
-const express = require("express");
-const mongoose = require("mongoose");
-const app = express();
+app.listen(5000);
 
-const connectDB = async () => {
-  try {
-    await mongoose.connect('mongodb://127.0.0.1:27017/Users', {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log('Connected to MongoDB');
-
-    const dataSchema = new mongoose.Schema({});
-
-    const data = mongoose.model('datas', dataSchema);
-
-  
-    const newData = await data.find();
-    console.warn(newData);
-    
-  } catch (error) {
-    console.error('Error connecting to MongoDB:', error.message);
-  }
-};
-
-const startServer = async () => {
-  try {
-    await connectDB();
-    app.listen(5000, () => {
-      console.log('Server started on port 5000');
-    });
-  } catch (error) {
-    console.error('Error starting the server:', error.message);
-  }
-};
-
-startServer(); */}
