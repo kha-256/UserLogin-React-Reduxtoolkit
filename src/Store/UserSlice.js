@@ -10,7 +10,7 @@ let initialState = {
     error: null
   };
   export const userLogin = createAsyncThunk(
-    'user',
+    'user/login',
     async (body) => {
       try {
         const response = await axios.post("http://localhost:5000/login", body, {
@@ -25,6 +25,20 @@ let initialState = {
       }
     }
   );
+
+  export const userSignup = createAsyncThunk(
+    'user/signup',
+    async(body)=>{
+      try{
+        const response = await axios.post("http://localhost:5000/signup",body);
+        return response.data;
+        
+      }
+      catch(error){
+        throw error;
+      }
+    }
+  )
 
 const UserSlice = createSlice({
     name: 'user',
@@ -67,6 +81,21 @@ const UserSlice = createSlice({
             }
            
         })
+        .addCase(userSignup.pending,(state,action)=>{
+          state.loading= true;
+          state.user=null;
+          state.error=null
+        })
+        .addCase(userSignup.fulfilled,(state,action)=>{
+          state.loading=false;
+          console.log("Signup API Response:", action.payload);
+        state.user = action.payload;
+        state.error = null;
+        })
+        .addCase(userSignup.rejected, (state, action) => {
+          state.loading = false;
+          state.error = action.error.message;
+        });
 
     }
 
