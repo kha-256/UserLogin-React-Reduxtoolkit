@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
-import './Login.css';
+import './Style.css';
 import { userLogin } from '../Store/UserSlice';
 import { addToken } from '../Store/UserSlice';
 import { useDispatch, useSelector } from 'react-redux';
@@ -40,19 +40,28 @@ const Login = () => {
       // Dispatch action to store the token in the Redux store
       dispatch(addToken(token));
 
-      // Navigate to the desired location after successful login
-      navigate("/");
+          // Clear the form fields after successful login
+    setEmail('');
+    setPassword('');
+
+      
+     
     } catch (error) {
       // Handle errors if needed
       console.log("Error during login:", error.message);
     }
   };
+
+  const handleSignup=()=>{
+    navigate('/signup')
+  }
   
   return (
     <Form onSubmit={handleSubmit} >
+    <h4 className='text'>Login</h4>
       <Form.Group className="mb-3" controlId="formBasicEmail">
         <Form.Label className='label'>Email address</Form.Label>
-        <Form.Control type="email" placeholder="Enter email" className='inputField'  autoComplete='off'
+        <Form.Control type="email" placeholder="Enter email" autoComplete='off'
           value={email} onChange={(e)=> setEmail(e.target.value)}
         />
         <Form.Text className="text-muted">
@@ -62,13 +71,18 @@ const Login = () => {
 
       <Form.Group className="mb-3" controlId="formBasicPassword">
         <Form.Label className='label'>Password</Form.Label>
-        <Form.Control type="password" placeholder="Password" className='inputField'  autoComplete='off'
+        <Form.Control type="password" placeholder="Password" autoComplete='off'
         value={password} onChange={(e)=> setPassword(e.target.value)} />
       </Form.Group>
       
-      <Button variant="primary" type="submit" style={{backgroundColor:"rgb(7, 76, 7)", border:'none'}}>
+      <Button variant="primary" type="submit" style={{backgroundColor:"rgb(7, 76, 7)", border:'none',width:"100%",}}>
        { loading? "Loading..." : "Login"}
       </Button>
+      <div className='createAccountText'>
+      
+      <p>Don't have an account, <span  style={{cursor:"pointer"}} onClick={handleSignup}>Create an account</span></p>
+     
+      </div>
       
       {error && (
         <div className='errorTextContainer'>{error}</div>
